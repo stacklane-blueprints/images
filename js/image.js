@@ -185,7 +185,7 @@
 
                 xhr.addEventListener("load", function (evt) {
                     if (xhr.status === 200) {
-                        if (autoFillName && (autoFillName.value == null || autoFillName.length == 0))
+                        if (autoFillName && (autoFillName.value == null || autoFillName.value.length == 0))
                             autoFillName.value = file.name;
 
                         // Important to reset regardless of success/failure,
