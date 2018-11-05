@@ -1,0 +1,18 @@
+/**
+ * Bulma changes
+ *
+ * We want progress in file-label, and a 100% progress element does not display there.
+ *
+ * Therefore needs a fixed size.
+ */
+
+.file-label .progress{
+  width: 8rem;
+  margin: 0rem;
+}
+.file .progress + .delete{
+  margin-left: .5rem;
+}
+.file-label .tag{
+  margin-left: .5rem;
+}
