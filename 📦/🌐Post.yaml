@@ -3,6 +3,7 @@ title: string
 
 image:
   type: image
+  public: true
 
 #todo
 #  type: image
