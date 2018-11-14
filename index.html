@@ -65,6 +65,15 @@
                     <img src="{{post.image.url}}">
                 </figure>
             </div>
+            <footer class="card-footer">
+                {{#post.copyable}}
+                <span class="card-footer-item">
+                    <form action="/posts/{{post.id}}/copy" method="POST">
+                        <input value="Copy" type="submit" class="button is-small">
+                    </form>
+                </span>
+                {{/post.copyable}}
+            </footer>
         </div>
     </div>
 
