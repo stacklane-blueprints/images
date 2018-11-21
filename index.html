@@ -18,6 +18,7 @@
     <script defer src="/js/init.js"></script>
     <script defer src="/js/image.js"></script>
     <script defer src="/js/modal.js"></script>
+    <script defer src="/js/notification.js"></script>
 
     {{% import {Post} from '📦'}}
 </head>
@@ -46,9 +47,24 @@
 </nav>
 
 <!--
- Listing
+ Main Content
  -->
 <main class="container">
+    <!--
+      Messages
+      -->
+    {{% choose-string-map message error=is-danger *=is-* }}
+
+    {{#Messages.all}}
+    <div data-controller="notification" class="notification {{% choose-string message this.type }}">
+        <button class="delete"></button>
+        {{this.value}}
+    </div>
+    {{/Messages.all}}
+
+    <!--
+      Listing
+      -->
     <div class="columns is-multiline is-mobile">
 
     {{#Post.all as post}}
@@ -73,6 +89,11 @@
                     </form>
                 </span>
                 {{/post.copyable}}
+                <span class="card-footer-item">
+                    <form action="/posts/{{post.id}}/delete" method="POST">
+                        <input value="Delete" type="submit" class="button is-small">
+                    </form>
+                </span>
             </footer>
         </div>
     </div>
@@ -105,7 +126,7 @@
 <link itemprop="content-security-policy" data-img-upload="true"> <!-- Enable CSP for the image transfer -->
 
 <div class="modal" id="addDialog">
-    <form action="/newPost" method="POST"> <!-- multipart unnecessary, since images are independently uploaded -->
+    <form action="/posts" method="POST"> <!-- multipart unnecessary, since images are independently uploaded -->
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
