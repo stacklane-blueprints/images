@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Image Example</title>
+    <title>{{🎨.title}}</title>
 
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -32,13 +32,13 @@
     <div class="container">
         <div class="navbar-brand">
             <span class="navbar-item">
-                <b>Image Example</b>
+                <b>{{🎨.title}}</b>
             </span>
             <div class="navbar-item">
                 <div class="buttons">
                     <a href="#" class="button is-primary" data-controller="modal" data-action="modal#show" data-modal-id="addDialog">
                         <span class="icon is-small"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0V0z"></path><path d="M10.21 16.83l-1.96-2.36L5.5 18h11l-3.54-4.71z"></path><path opacity=".3" d="M16.5 18h-11l2.75-3.53 1.96 2.36 2.75-3.54L16.5 18zM17 7h-3V6H4v14h14V10h-1V7z"></path><path d="M20 4V1h-2v3h-3v2h3v2.99h2V6h3V4zm-2 16H4V6h10V4H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V10h-2v10z"></path></svg></span>
-                        <span><strong>Add</strong></span>
+                        <span><strong>{{🎨.action-add}}</strong></span>
                     </a>
                 </div>
             </div>
@@ -85,13 +85,13 @@
                 {{#post.copyable}}
                 <span class="card-footer-item">
                     <form action="/posts/{{post.id}}/copy" method="POST">
-                        <input value="Copy" type="submit" class="button is-small">
+                        <input value="{{🎨.action-copy}}" type="submit" class="button is-small">
                     </form>
                 </span>
                 {{/post.copyable}}
                 <span class="card-footer-item">
                     <form action="/posts/{{post.id}}/delete" method="POST">
-                        <input value="Delete" type="submit" class="button is-small">
+                        <input value="{{🎨.action-delete}}" type="submit" class="button is-small">
                     </form>
                 </span>
             </footer>
@@ -108,10 +108,10 @@
         <div class="hero-body">
             <div class="container">
                 <p class="title">
-                    No Images
+                    {{🎨.empty-title}}
                 </p>
                 <p class="subtitle">
-                    Click 'Add' in the toolbar to upload your first.
+                    {{🎨.empty-desc 🎨.action-add}}
                 </p>
             </div>
         </div>
@@ -130,7 +130,7 @@
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title"><b>Add Image</b></p>
+            <p class="modal-card-title"><b>{{🎨.add-title}}</b></p>
             <a class="delete is-modal-hide" aria-label="close"></a>
         </header>
         <section class="modal-card-body">
@@ -148,7 +148,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0V0z"/><path opacity=".3" d="M19.21 12.04l-1.53-.11-.3-1.5C16.88 7.86 14.62 6 12 6 9.94 6 8.08 7.14 7.12 8.96l-.5.95-1.07.11C3.53 10.24 2 11.95 2 14c0 2.21 1.79 4 4 4h13c1.65 0 3-1.35 3-3 0-1.55-1.22-2.86-2.79-2.96zm-5.76.96v3h-2.91v-3H8l4-4 4 4h-2.55z"/><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4 0-2.05 1.53-3.76 3.56-3.97l1.07-.11.5-.95C8.08 7.14 9.94 6 12 6c2.62 0 4.88 1.86 5.39 4.43l.3 1.5 1.53.11c1.56.1 2.78 1.41 2.78 2.96 0 1.65-1.35 3-3 3zM8 13h2.55v3h2.9v-3H16l-4-4z"/></svg>
                             </span>
                             <span class="file-label">
-                                Choose Image...
+                                {{🎨.add-choose}}
                             </span>
                         </span>
                     </label>
@@ -162,8 +162,8 @@
             </div>
         </section>
         <footer class="modal-card-foot">
-            <button type="submit" class="button is-primary">Save</button>
-            <button class="button is-modal-hide">Cancel</button>
+            <button type="submit" class="button is-primary is-modal-save">{{🎨.action-save}}</button>
+            <button class="button is-modal-hide">{{🎨.action-cancel}}</button>
         </footer>
     </div>
     </form>

@@ -1,7 +1,8 @@
 import {post} from '🔗';
+import * as Properties from '🎨';
 
 let newPost = post.get().copy();
 
-newPost.title += ' (Copy)';
+newPost.title += ' (' + Properties.action_copy()  + ')';
 
-Redirect.home().success('Copied ' + post.get().title);
+Redirect.home().success(Properties.success_copy(post.get().title));
