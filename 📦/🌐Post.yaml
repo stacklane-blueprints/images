@@ -5,9 +5,3 @@ image:
   type: image
   public: true
 
-#todo
-#  type: image
-#  width:
-#    max: 1000
-#  size:
-#    max: 50000
