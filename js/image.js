@@ -164,8 +164,10 @@
             fetch(thiz.data.get('new-put-url'), {
                 method: 'post',
                 body: newPutUrlData
-            }).catch(function(){
-                thiz._handleError('Upload Failed', 'Offline?')
+            }).catch(function(e){
+                // TODO ios issue
+                thiz._handleError('Upload Failed', 'Offline?');
+                console.error(e);
             }).then(function(response) {
                 return response.json();
             }).then(function(data) {
@@ -173,7 +175,7 @@
 
                 xhr.open('PUT', putUrl, true);
 
-                xhr.setRequestHeader("Content-Type", ''); // our request signature allows any content type / unspecified.
+                xhr.setRequestHeader("Content-Type", ''); // our request signature allows any content type / unspecified
 
                 xhr.upload.addEventListener("progress", function (evt) {
                     if (evt.lengthComputable) { // Update progress:
