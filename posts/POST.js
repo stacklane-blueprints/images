@@ -5,4 +5,4 @@ import {newImage, title} from 'form';
 
 new Post().image(newImage).title(title);
 
-Redirect.home().success(Properties.success_add(title));
+Redirect.home().success(Properties.successAdd(title));

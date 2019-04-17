@@ -3,6 +3,6 @@ import * as Properties from '🎨';
 
 let newPost = post.get().copy();
 
-newPost.title += ' (' + Properties.action_copy()  + ')';
+newPost.title += ' (' + Properties.actionCopy()  + ')';
 
-Redirect.home().success(Properties.success_copy(post.get().title));
+Redirect.home().success(Properties.successCopy(post.get().title));
