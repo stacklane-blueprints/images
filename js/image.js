@@ -118,7 +118,7 @@
         /**
          * After an error/abort, must choose a new file to get things reset.
          */
-        _handleError(validity, msg, console){
+        _handleError(validity, msg, consoleValue){
             this._resetFileValue();
             this._resetActionLabel();
             this.input.value = '';
@@ -131,7 +131,7 @@
             } else if (this.file.getAttribute('data-required') == 'true'){
                 this.file.setCustomValidity(REQUIRED_MSG);
             }
-            if (console) console.error(console);
+            if (consoleValue) console.error(consoleValue);
         }
 
         _onFileChange(evt){
