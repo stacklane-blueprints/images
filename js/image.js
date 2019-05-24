@@ -1,9 +1,10 @@
 /**
  * Handles an image upload control and preview.
  *
- * Relies on Bulma's CSS file structure:
+ * Depends On:
  *
- * https://bulma.io/documentation/form/file/
+ * - https://bulma.io/documentation/form/file/
+ * - https://github.com/blueimp/JavaScript-Load-Image
  */
 (()=>{
     'use strict';
