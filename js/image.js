@@ -1,19 +1,40 @@
 /**
- * Handles an image upload control.
+ * Handles an image upload control and preview.
  *
  * Relies on Bulma's CSS file structure:
  *
  * https://bulma.io/documentation/form/file/
  */
-(function () {
+(()=>{
     'use strict';
 
     const REQUIRED_MSG = "Required";
 
-    const ACCEPT = '.png, .jpg, .gif, image/png, image/jpeg, image/gif'; // Spec recommends both extension and mime type be specified
+    const ACCEPT = '.png, .jpg, .gif, .jpeg, image/png, image/jpeg, image/gif'; // Spec recommends both extension and mime type be specified
 
-    // https://stackoverflow.com/questions/15900485/correct-way-to-convert-size-in-bytes-to-kb-mb-gb-in-javascript
-    const FORMAT_BYTES = function(a,b){if(0==a)return"0 Bytes";var c=1024,d=b||2,e=["Bytes","KB","MB","GB","TB","PB","EB","ZB","YB"],f=Math.floor(Math.log(a)/Math.log(c));return parseFloat((a/Math.pow(c,f)).toFixed(d))+" "+e[f]};
+    const GPS_TO_DECIMAL = (exif)=>{
+        if (!exif) return [];
+        let latRef = exif.get('GPSLatitudeRef')
+        let latArr = exif.get('GPSLatitude');
+        let longRef = exif.get('GPSLongitudeRef')
+        let longArr = exif.get('GPSLongitude');
+        if (!latRef || !latArr || latArr.length != 3 || !longRef || longArr.length !=3) return [];
+        try {
+            return [
+                COORDS_TO_DECIMAL(latRef, latArr),
+                COORDS_TO_DECIMAL(longRef, longArr)
+            ];
+        } catch (e){
+            console.error(e);
+            return [];
+        }
+    }
+
+    const COORDS_TO_DECIMAL = (ref, coords)=>{
+        let v = coords[0] + (coords[1] / 60) + (coords[2] / 3600);
+        if (ref == 'W' || ref == 'S') v = v * -1;
+        return v;
+    };
 
     App.register("image", class extends Stimulus.Controller {
         initialize(){
@@ -25,12 +46,13 @@
         }
 
         connect(){
-            if (!this._hasSupport()) return;
+            if (!this._hasSupport()) return; // alert already shown in initialize()
 
             this.actionLabel = this.element.querySelector('span.file-label');
+            this.preview = this.element.querySelector('.file-preview');
             this.originalActionLabelHTML = this.actionLabel.innerHTML;
 
-            this.file = this.element.getElementsByClassName('file-input')[0];
+            this.file = this.element.querySelector('.file-input');
             this.file.setAttribute('accept', ACCEPT);
 
             // Use a hidden field for the actual input (handled by JS):
@@ -38,7 +60,7 @@
             this.input.setAttribute('type', 'hidden');
 
             // The hidden field assumes the name given to the file input:
-            var name = this.file.getAttribute('name');
+            let name = this.file.getAttribute('name');
             this.file.setAttribute('name', name + '_file');
             this.input.setAttribute('name', name);
 
@@ -52,8 +74,8 @@
             // Append the hidden field.
             this.element.appendChild(this.input);
 
-            var thiz = this;
-            this.file.addEventListener('change', function(evt){ thiz._onFileChange(evt); });
+            let thiz = this;
+            this.file.addEventListener('change', (evt)=>{ thiz._onFileChange(evt); });
         }
 
         choose(evt){
@@ -61,11 +83,11 @@
         }
 
         _setupProgress(xhr){
-            var thiz = this;
+            let thiz = this;
 
-            var abort = document.createElement('a');
+            let abort = document.createElement('a');
             abort.setAttribute('class', 'delete is-small');
-            abort.addEventListener('click', function(evt){
+            abort.addEventListener('click', (evt)=>{
                 evt.stopPropagation(); evt.preventDefault();
 
                 try {
@@ -75,10 +97,9 @@
                 thiz._handleError(null, null, null);
             });
 
-
-            var progress = document.createElement('progress');
+            let progress = document.createElement('progress');
+            progress.setAttribute('value', '0');
             progress.setAttribute('max', '100'); // Dummy value waiting for true max from XHR
-            // Leave 'value' out to indicate indeterminate for Bulma 0.7.3: progress.setAttribute('value', 0);
             progress.setAttribute('class', 'progress is-primary'); // Bulma classes
 
             thiz.actionLabel.innerHTML = '';
@@ -89,27 +110,31 @@
         }
 
         _setFileDisplay(display){
-            var fileName = this.actionLabel; //this.element.getElementsByClassName('file-name')[0];
+            let fileName = this.actionLabel; //this.element.getElementsByClassName('file-name')[0];
             fileName.innerText = display + ' '; // spacing for tag
-        }
-
-        _addFileDisplayTag(cls, label){
-            var fileName = this.actionLabel; //this.element.getElementsByClassName('file-name')[0];
-            var tag = document.createElement('span');
-            tag.setAttribute('class', 'tag ' + cls);
-            tag.innerText = label;
-            fileName.appendChild(tag);
         }
 
         _resetActionLabel(){
             this.actionLabel.innerHTML = this.originalActionLabelHTML;
         }
 
-        _resetFileValue(){
-            this.file.setCustomValidity('');
+        _resetFileValue(valid){
+            if (valid){
+                this.file.setCustomValidity('');
+            } else {
+                this.preview.innerHTML = '';
+                if (this.file.getAttribute('data-required') == 'true')
+                    this.file.setCustomValidity(REQUIRED_MSG);
+            }
 
-            // Modern browsers:
-            try { this.file.value = null; } catch(ex) { }
+            // Modern browsers (?):
+            try { this.file.value = null; } catch(ex) {
+                console.error(ex);
+            }
+
+            // or swap out the 'type'?
+            this.file.setAttribute('type', 'text');
+            this.file.setAttribute('type', 'file');
 
             // Fallback old browsers:
             //if (this.file.value) this.file.parentNode.replaceChild(this.file.cloneNode(true), this.file);
@@ -119,65 +144,91 @@
          * After an error/abort, must choose a new file to get things reset.
          */
         _handleError(validity, msg, consoleValue){
-            this._resetFileValue();
+            this._resetFileValue(false);
             this._resetActionLabel();
             this.input.value = '';
             if (msg) {
                 this._setFileDisplay('');
-                this._addFileDisplayTag('is-danger', msg);
+                //this._addFileDisplayTag('is-danger', msg);
             }
             if (validity) {
                 this.file.setCustomValidity(validity);
-            } else if (this.file.getAttribute('data-required') == 'true'){
-                this.file.setCustomValidity(REQUIRED_MSG);
+                // ?? why over plain 'required'
+                //  else if (this.file.getAttribute('data-required') == 'true'){
+                //   this.file.setCustomValidity(REQUIRED_MSG);
             }
             if (consoleValue) console.error(consoleValue);
         }
 
-        _onFileChange(evt){
-            var thiz = this;
-            var file = thiz.file.files[0];
-
-            // Only process image files (probably already handled by native file chooser):
-            if (!file.type.match('image.*')) {
-                thiz.file.setCustomValidity('Not an Image');
-                return;
+        _onFileReady(file, canvas){
+            if (this.preview) {
+                this.preview.innerHTML = '';
+                this.preview.appendChild(canvas);
             }
 
-            // Initial validity state on change:
-            thiz.file.setCustomValidity('Uploading');
+            let rotated = canvas.getAttribute('data-rotated') === 'true';
 
-            var autoFillName = null;
-            if (thiz.data.get('auto-fill-name')){
-                autoFillName = thiz.element
-                    .closest('form')
-                    .querySelector('input[name="' + thiz.data.get('auto-fill-name') + '"]');
-                if (!autoFillName) console.warn("Unable to find input named " + thiz.data.get('auto-fill-name'));
+            /**
+             * Whether to perform rotation on client (not ideal).
+             *
+             * Not needed for:
+             *
+             * 1) iOS (auto displays as rotated based on exif)
+             * 2) Clients without toBlob
+             * 3) Future: clients that support CSS4 image-orientation: from-image
+             */
+            let hasToBlobSupport = (typeof HTMLCanvasElement.prototype.toBlob === 'function'); /* iOS/not-rotatable */
+            let wantsPreprocessRotation = rotated && hasToBlobSupport;
+
+            let width = canvas.getAttribute('width');
+            let height = canvas.getAttribute('height');
+
+            if (!wantsPreprocessRotation){
+                width = canvas.getAttribute('data-original-width');
+                height = canvas.getAttribute('data-original-height');
             }
 
-            var xhr = new XMLHttpRequest();
-            var progress = thiz._setupProgress(xhr);
+            let xhr = new XMLHttpRequest();
+            let progress = this._setupProgress(xhr);
 
-            var newPutUrlData = new FormData();
-            newPutUrlData.set('name', file.name);
+            let newPutUrlData = new FormData();
+            newPutUrlData.set('name', file.name.replace('.jpeg', '.jpg') /* normalize */);
+            if (width > 0 && height > 0) {
+                newPutUrlData.set('width', '' + width);
+                newPutUrlData.set('height', '' + height);
+            } else {
+                console.log('Unknown width/height');
+            }
 
-            fetch(thiz.data.get('new-put-url'), {
+            let thiz = this;
+
+            fetch(thiz.data.get('new-put-href'), {
                 method: 'post',
-                body: newPutUrlData
-            }).catch(function(e){
-                // TODO ios issue
+                body: newPutUrlData,
+                credentials: 'same-origin',
+                mode: 'same-origin',
+                redirect: 'error',
+                headers: {'Accept': 'application/json'}
+            }).catch((e)=>{
                 thiz._handleError('Upload Failed', 'Offline?');
                 console.error(e);
-            }).then(function(response) {
-                return response.json();
-            }).then(function(data) {
-                var putUrl = data.url;
+            }).then((response)=>{
+                if (response.status != 200) {
+                    thiz._handleError('Upload Failed', 'Error: ' + response.status);
+                    console.error(response);
+                } else {
+                    return response.json();
+                }
+            }).then((data)=>{
+                if (!data) return; // could be an error
+
+                let putUrl = data.url;
 
                 xhr.open('PUT', putUrl, true);
 
                 xhr.setRequestHeader("Content-Type", ''); // our request signature allows any content type / unspecified
 
-                xhr.upload.addEventListener("progress", function (evt) {
+                xhr.upload.addEventListener("progress", (evt)=>{
                     if (evt.lengthComputable) { // Update progress:
                         progress.setAttribute('max', evt.total);
                         progress.setAttribute('value', evt.loaded);
@@ -185,29 +236,108 @@
                     }
                 }, false);
 
-                xhr.addEventListener("load", function (evt) {
+                xhr.addEventListener("load", (evt)=>{
                     if (xhr.status === 200) {
-                        if (autoFillName && (autoFillName.value == null || autoFillName.value.length == 0))
-                            autoFillName.value = file.name;
-
-                        // Important to reset regardless of success/failure,
+                        // IMPORTANT to reset regardless of success/failure,
                         // as even with multipart forms we do not want to receive the value:
-                        thiz._resetFileValue();
+                        thiz._resetFileValue(true);
                         thiz.input.value = putUrl;
-                        thiz._setFileDisplay(file.name);
-                        thiz._addFileDisplayTag('is-success', FORMAT_BYTES(file.size,0));
+
+                        thiz._setFileDisplay('Change Image...');
                     } else {
                         thiz._handleError('Upload Failed', 'Failed (' + xhr.status + ')', xhr.status);
                     }
                 });
 
-                xhr.addEventListener('error', function (evt) {
+                xhr.addEventListener('error', (evt)=>{
                     thiz._handleError('Upload Failed', 'Failed', evt);
                 });
 
-                xhr.send(file);
+                if (wantsPreprocessRotation) {
+                    // Not ideal, because it causes lossy re-encoding on the client.
+                    canvas.toBlob((blob)=>{
+                        xhr.send(blob);
+                    }, 'image/jpeg'); // TODO retain png or jpg based on original image
+                } else {
+                    // Ideal, and most images are probably already oriented correctly.
+                    xhr.send(file);
+                }
             });
+        }
 
+        _onFileChange(evt){
+            if (!this.file.files.length) {
+                if (this.preview) this.preview.innerHTML = ''; // clear any previous
+                return; // no image selected, exit
+            }
+
+            let file = this.file.files[0];
+
+            // Images Only (probably already handled by native file chooser):
+            if (!file.type.match('image.*')) {
+                this.file.setCustomValidity('Not an Image');
+                return;
+            }
+
+            // Initial validity state on change:
+            this.file.setCustomValidity('Uploading');
+
+            {
+                let thiz = this;
+
+                loadImage(
+                    file,
+                    function (result, meta) {
+                        if (meta && meta.exif){
+                            let rotated = meta.exif.get('Orientation') >= 2 && meta.exif.get('Orientation') <= 8;
+
+                            result.setAttribute('data-rotated', rotated ? 'true' : 'false');
+
+                            let gps = GPS_TO_DECIMAL(meta.exif);
+
+                            let locationInputValue = '';
+
+                            if (gps && gps.length == 2){
+                                result.setAttribute('data-latitude', gps[0]);
+                                result.setAttribute('data-longitude', gps[1]);
+
+                                locationInputValue = gps[0] + ',' + gps[1];
+                            }
+
+                            if (thiz.data.get('location-input')) {
+                                let i = document.querySelector(thiz.data.get('location-input'));
+                                if (i) {
+                                    // Important dispatch event on even an empty value:
+                                    i.value = locationInputValue;
+                                    i.dispatchEvent(new Event('change'));
+                                }
+                            }
+                        }
+
+                        if (meta){
+                            result.setAttribute('data-original-width', meta.originalWidth);
+                            result.setAttribute('data-original-height', meta.originalHeight);
+                        }
+
+                        thiz._onFileReady(file, result);
+                    },
+                    {
+                        canvas: true,
+                        orientation: true, // reorient as needed accordingly to exif
+                        meta: true
+                    }
+                );
+            }
+
+            // data-image-then-focus
+            if (this.data.get('then-focus')){
+                let thenFocus = document.querySelector(this.data.get('then-focus'));
+                if (thenFocus){
+                    thenFocus.focus();
+                } else {
+                    console.error("image-then-focus not found: " + this.data.get('then-focus'));
+                }
+            }
         }
     });
 })();

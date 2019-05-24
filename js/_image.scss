@@ -7,12 +7,19 @@
  */
 
 .file-label .progress{
-  width: 8rem;
+  width: 100%;
+  min-width: 5em; // Keep in mind small displays such as 5SE
   margin: 0rem;
+  display: inline-flex;
 }
 .file .progress + .delete{
   margin-left: .5rem;
 }
 .file-label .tag{
   margin-left: .5rem;
+}
+.file-preview img, .file-preview canvas{
+  max-width: 64px;
+  border-radius: 2px;
+  display:inline-block;
 }

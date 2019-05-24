@@ -10,25 +10,28 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.7.2/css/bulma.min.css" integrity="sha256-2pUeJf+y0ltRPSbKOeJh09ipQFYxUdct5nTY6GAXswA=" crossorigin="anonymous">
-    <link rel="stylesheet" href="/js/image.scss">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.7.5/css/bulma.min.css" integrity="sha256-vK3UTo/8wHbaUn+dTQD0X6dzidqc5l7gczvH+Bnowwk=" crossorigin="anonymous">
 
-    <script defer src="https://cdn.jsdelivr.net/npm/stimulus@1.1.0/dist/stimulus.umd.js" integrity="sha256-4KV/iy8MHfeAUz3QV4sEhCoK4eT54AH1YxhvmN08h6s=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="/style.scss">
+
+    <script defer src="https://cdn.jsdelivr.net/npm/stimulus@1.1.1/dist/stimulus.umd.js" integrity="sha256-mUuPeK7DRsoSOwJJcvbcMgWsqAVPJs7X8K/h7NxXQj4=" crossorigin="anonymous"></script>
+
+    {{! Client-side rotation based on EXIF }}
+    <script defer async src="https://cdn.jsdelivr.net/npm/blueimp-load-image@2.21.0/js/load-image.all.min.js" integrity="sha256-mtKZhQBI3ewHPDzk2TBlA2ykWkBOxMtbq11Vg3bKVPc=" crossorigin="anonymous"></script>
 
     <script defer src="/js/init.js"></script>
     <script defer src="/js/image.js"></script>
     <script defer src="/js/modal.js"></script>
     <script defer src="/js/notification.js"></script>
 
-    {{% import {Post} from '📦'}}
+    {{% import {Post} from '📦' }}
     {{% svg /_icons/ as ic }}
+    {{% partial /_dialog as dialog }}
 </head>
 
 <body>
 
-<!--
-  Toolbar
-  -->
+{{! Toolbar }}
 <nav class="navbar is-info" role="navigation" aria-label="main navigation">
     <div class="container">
         <div class="navbar-brand">
@@ -47,15 +50,13 @@
     </div>
 </nav>
 
-<!--
- Main Content
- -->
-<main class="container">
-    <!--
-      Messages
-      -->
-    {{% choose-string-map message error=is-danger *=is-* }}
+{{! Include Dialog }}
+{{> dialog}}
 
+{{! Main Content }}
+<main class="container">
+    {{! Messages }}
+    {{% choose-string-map message error=is-danger *=is-* }}
     {{#Messages.all}}
     <div data-controller="notification" class="notification {{% choose-string message this.type }}">
         <button class="delete"></button>
@@ -63,48 +64,42 @@
     </div>
     {{/Messages.all}}
 
-    <!--
-      Listing
-      -->
+    {{! Listing }}
     <div class="columns is-multiline is-mobile">
-
-    {{#Post.all as post}}
-
-    <div class="column is-one-quarter">
-        <div class="card">
-            <header class="card-header">
-                <p class="card-header-title">
-                    {{post.title}}
-                </p>
-            </header>
-            <div class="card-image">
-                <figure class="image">
-                    {{{post.image}}}
-                </figure>
+        {{#Post.all as post}}
+        <div class="column is-one-quarter">
+            <div class="card">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        {{post.title}}
+                    </p>
+                </header>
+                <div class="card-image">
+                    <figure class="image">
+                        {{{post.image}}}
+                    </figure>
+                </div>
+                <footer class="card-footer">
+                    {{#post.copyable}}
+                    <span class="card-footer-item">
+                        <form action="/posts/{{post.id}}/copy" method="POST">
+                            <input value="{{🎨.action-copy}}" type="submit" class="button is-small">
+                        </form>
+                    </span>
+                    {{/post.copyable}}
+                    <span class="card-footer-item">
+                        <form action="/posts/{{post.id}}/delete" method="POST">
+                            <input value="{{🎨.action-delete}}" type="submit" class="button is-small">
+                        </form>
+                    </span>
+                </footer>
             </div>
-            <footer class="card-footer">
-                {{#post.copyable}}
-                <span class="card-footer-item">
-                    <form action="/posts/{{post.id}}/copy" method="POST">
-                        <input value="{{🎨.action-copy}}" type="submit" class="button is-small">
-                    </form>
-                </span>
-                {{/post.copyable}}
-                <span class="card-footer-item">
-                    <form action="/posts/{{post.id}}/delete" method="POST">
-                        <input value="{{🎨.action-delete}}" type="submit" class="button is-small">
-                    </form>
-                </span>
-            </footer>
         </div>
+        {{/Post.all}}
     </div>
 
-    {{/Post.all}}
-
-    </div>
-
+    {{! Empty Case }}
     {{^Post.all}}
-
     <section class="hero is-light">
         <div class="hero-body">
             <div class="container">
@@ -117,58 +112,8 @@
             </div>
         </div>
     </section>
-
     {{/Post.all}}
 </main>
-
-<!--
-  Dialog (add a new Post model + image)
-  -->
-<link itemprop="content-security-policy" data-img-upload="true"> <!-- Enable CSP for the image transfer -->
-
-<div class="modal" id="addDialog">
-    <form action="/posts" method="POST"> <!-- multipart unnecessary, since images are independently uploaded -->
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title"><b>{{🎨.add-title}}</b></p>
-            <a class="delete is-modal-hide" aria-label="close"></a>
-        </header>
-        <section class="modal-card-body">
-            <div class="field">
-                <div class="file"
-                     data-controller="image"
-                     data-image-auto-fill-name="title"
-                     data-image-new-put-url="/newImageUrl"
-                     data-image-size-max="{{Post.image.sizeMax}}"
-                    >
-                    <label class="file-label">
-                        <input class="file-input" type="file" name="newImage" {{Post.image.requiredAttribute}}>
-                        <span class="file-cta">
-                            <span class="file-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0V0z"/><path opacity=".3" d="M19.21 12.04l-1.53-.11-.3-1.5C16.88 7.86 14.62 6 12 6 9.94 6 8.08 7.14 7.12 8.96l-.5.95-1.07.11C3.53 10.24 2 11.95 2 14c0 2.21 1.79 4 4 4h13c1.65 0 3-1.35 3-3 0-1.55-1.22-2.86-2.79-2.96zm-5.76.96v3h-2.91v-3H8l4-4 4 4h-2.55z"/><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4 0-2.05 1.53-3.76 3.56-3.97l1.07-.11.5-.95C8.08 7.14 9.94 6 12 6c2.62 0 4.88 1.86 5.39 4.43l.3 1.5 1.53.11c1.56.1 2.78 1.41 2.78 2.96 0 1.65-1.35 3-3 3zM8 13h2.55v3h2.9v-3H16l-4-4z"/></svg>
-                            </span>
-                            <span class="file-label">
-                                {{🎨.add-choose}}
-                            </span>
-                        </span>
-                    </label>
-                </div>
-            </div>
-
-            <div class="field">
-                <div class="control">
-                    <input class="input" type="text" name="title" placeholder="Title" {{Post.image.requiredAttribute}}>
-                </div>
-            </div>
-        </section>
-        <footer class="modal-card-foot">
-            <button type="submit" class="button is-primary is-modal-save">{{🎨.action-save}}</button>
-            <button class="button is-modal-hide">{{🎨.action-cancel}}</button>
-        </footer>
-    </div>
-    </form>
-</div>
 
 </body>
 
