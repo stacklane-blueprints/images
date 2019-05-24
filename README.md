@@ -1,4 +1,4 @@
-# image-upload
+# Image Management
 
 Image upload with preview, auto-rotate, copy/delete,
 server-side storage, and reusable StimulusJS widget.
