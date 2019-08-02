@@ -1,8 +1,10 @@
 import {Post} from '📦';
 import * as Properties from '🎨';
 
-import {newImage, title} from 'form';
+let post = new Post();
 
-new Post().image(newImage).title(title);
+// TODO catch $ModelInvalid during submit, and show a message accordingly
 
-Redirect.home().success(Properties.successAdd(title));
+Post.Form.submit(post);
+
+Redirect.home().success(Properties.successAdd(post.title));
