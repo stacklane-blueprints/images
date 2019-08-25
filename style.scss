@@ -1,2 +1,6 @@
 
 @import "/js/image";
+
+img[data-unsafe="true"] {
+  filter: sepia(100%);
+}

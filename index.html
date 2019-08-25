@@ -68,7 +68,7 @@
     <div class="columns is-multiline is-mobile">
         {{#Post.all as post}}
         <div class="column is-one-quarter">
-            <div class="card">
+            <div class="card {{#post.image.unsafe}}is-unsafe{{/post.image.unsafe}}">
                 <header class="card-header">
                     <p class="card-header-title">
                         {{post.title}}
