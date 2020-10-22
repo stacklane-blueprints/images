@@ -1,7 +1,7 @@
 # Image Management
 
 Image upload with preview, auto-rotate, copy/delete,
-server-side storage, and reusable StimulusJS widget.
+server-side storage, and reusable HTML components.
 
 ## Features Used
 
@@ -18,6 +18,5 @@ server-side storage, and reusable StimulusJS widget.
 
 ## Third Party Libraries
 
-- [StimulusJS](https://stimulusjs.org). Modest HTML hooks.
 - [Bulma](https://bulma.io). CSS Framework
 - [JavaScript-Load-Image](https://github.com/blueimp/JavaScript-Load-Image). Provides auto-rotation, GPS parsing, and canvas preview.

@@ -3,7 +3,7 @@
 
 <link itemprop="content-security-policy" data-img-upload="true"> {{! Enable CSP for the image transfer }}
 
-<div class="modal" id="addDialog">
+<ui-modal id="add">
     {{#Post.Form.view as form}}
     <form action="/posts?_form={{form.id}}" method="POST"> {{! multipart unnecessary, since images are independently uploaded }}
         <div class="modal-background"></div>
@@ -13,11 +13,10 @@
                 <a class="delete is-modal-hide" aria-label="close"></a>
             </header>
             <section class="modal-card-body">
-                <div class="field"
-                     data-controller="image"
-                     data-image-new-put-href="/newImageUrl"
-                     data-image-size-max="{{Post.image.sizeMax}}"
-                     data-image-then-focus="input[name='{{form.title.path}}']">
+                <ui-image-upload class="field is-block"
+                                 new-put-href="/newImageUrl"
+                                 size-max="{{Post.image.sizeMax}}"
+                                 then-focus="input[name='{{form.title.path}}']">
                     <div class="control">
                         <div class="columns is-mobile">
                             <div class="column is-narrow">
@@ -40,7 +39,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </ui-image-upload>
                 <div class="field">
                     <div class="control">
                         {{#form.title}}
@@ -56,4 +55,4 @@
         </div>
     </form>
     {{/Post.Form.view}}
-</div>
+</ui-modal>

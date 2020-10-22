@@ -10,19 +10,15 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.7.5/css/bulma.min.css" integrity="sha256-vK3UTo/8wHbaUn+dTQD0X6dzidqc5l7gczvH+Bnowwk=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css" integrity="sha256-WLKGWSIJYerRN8tbNGtXWVYnUM5wMJTXD8eG4NtGcDM=" crossorigin="anonymous">
 
     <link rel="stylesheet" href="/style.scss">
 
-    <script defer src="https://cdn.jsdelivr.net/npm/stimulus@1.1.1/dist/stimulus.umd.js" integrity="sha256-mUuPeK7DRsoSOwJJcvbcMgWsqAVPJs7X8K/h7NxXQj4=" crossorigin="anonymous"></script>
+    <script defer async src="https://cdn.jsdelivr.net/npm/blueimp-load-image@5.14.0/js/load-image.all.min.js" integrity="sha256-vQDM5w951GK6uoiWoQvGDA18EBTA+fceHIc/lZ5ZIcs=" crossorigin="anonymous"></script>
 
-    {{! Client-side rotation based on EXIF }}
-    <script defer async src="https://cdn.jsdelivr.net/npm/blueimp-load-image@2.21.0/js/load-image.all.min.js" integrity="sha256-mtKZhQBI3ewHPDzk2TBlA2ykWkBOxMtbq11Vg3bKVPc=" crossorigin="anonymous"></script>
-
-    <script defer src="/js/init.js"></script>
-    <script defer src="/js/image.js"></script>
-    <script defer src="/js/modal.js"></script>
-    <script defer src="/js/notification.js"></script>
+    <script defer src="/ui/modal.js"></script>
+    <script defer src="/ui/message.js"></script>
+    <script defer src="/ui/image-upload.js"></script>
 
     {{% import {Post} from '📦' }}
     {{% svg /_icons/ as ic }}
@@ -40,10 +36,10 @@
             </span>
             <div class="navbar-item">
                 <div class="buttons">
-                    <a href="#" class="button is-primary" data-controller="modal" data-action="modal#show" data-modal-id="addDialog">
+                    <ui-show-modal class="button is-primary" modal="add">
                         <span class="icon is-small">{{> ic-add_image}}</span>
                         <span><strong>{{🎨.action-add}}</strong></span>
-                    </a>
+                    </ui-show-modal>
                 </div>
             </div>
         </div>
@@ -58,10 +54,10 @@
     {{! Messages }}
     {{% choose-string-map message error=is-danger *=is-* }}
     {{#Messages.all}}
-    <div data-controller="notification" class="notification {{% choose-string message this.type }}">
+    <ui-message class="{{% choose-string message this.type }}">
         <button class="delete"></button>
         {{this.value}}
-    </div>
+    </ui-message>
     {{/Messages.all}}
 
     {{! Listing }}
